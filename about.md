@@ -4,12 +4,11 @@ title: About
 permalink: /about/
 ---
 
-Some information about you!
+Hello! I'm a third-year studying Applied Mathematics with a Specialization in Computing at UCLA.
 
-### More Information
 
-A place to include any other types of information that you'd like to include about yourself.
+I am a data science enthusiast! I enjoy using data to solve challenging problems and applying machine learning algorithms to generate actionable insights from large datasets.
 
 ### Contact me
 
-[email@domain.com](mailto:email@domain.com)
+[ananya.achan2018@gmail.com](mailto:ananya.achan2018@gmail.com)
