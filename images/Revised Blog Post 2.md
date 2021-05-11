@@ -1,7 +1,4 @@
----
-layout: post
-title: Blog Post 2 - Spectral Clustering
----
+# Blog Post 2: Spectral Clustering
 
 This is a tutorial on a simple version of the *spectral clustering* algorithm for clustering data points. 
 
@@ -29,7 +26,16 @@ X, y = datasets.make_blobs(n_samples=n, shuffle=True, random_state=None, centers
 # labels of each point are in y
 plt.scatter(X[:,0], X[:,1])
 ```
-![blog2_output_2_1.png](/images/blog2_output_2_1.png)
+
+
+
+
+    <matplotlib.collections.PathCollection at 0x125af8b10>
+
+
+
+
+![png](blog2_output_2_1.png)
 
 
 We notice two natural circular clusters in the plot - but how do we detect them?    
@@ -43,7 +49,16 @@ km.fit(X)
 
 plt.scatter(X[:,0], X[:,1], c = km.predict(X))
 ```
-![blog2_output_4_1.png](/images/blog2_output_4_1.png)
+
+
+
+
+    <matplotlib.collections.PathCollection at 0x126bdc110>
+
+
+
+
+![png](output_4_1.png)
 
 
 ### Harder Clustering
@@ -57,7 +72,16 @@ n = 200
 X, y = datasets.make_moons(n_samples=n, shuffle=True, noise=0.05, random_state=None)
 plt.scatter(X[:,0], X[:,1])
 ```
-![blog2_output_6_1.png](/images/blog2_output_6_1.png)
+
+
+
+
+    <matplotlib.collections.PathCollection at 0x1268b8f10>
+
+
+
+
+![png](output_6_1.png)
 
 
 We can still notice two natural clusters, but they are crescents instead of circular. Let's see how K-means performs.
@@ -69,7 +93,15 @@ km.fit(X)
 plt.scatter(X[:,0], X[:,1], c = km.predict(X))
 ```
 
-![blog2_output_8_1.png](/images/blog2_output_8_1.png)
+
+
+
+    <matplotlib.collections.PathCollection at 0x126c56c50>
+
+
+
+
+![png](output_8_1.png)
 
 
 Clearly K-means didn't work because the two crescents were not detected.     
@@ -81,7 +113,7 @@ This is where spectral clustering can be used instead. Let’s see how it works!
 
 ## Part A - Similarity Matrix 
 
-For `n` number of data points in array `X`, the similarity matrix $$\mathbf{A}$$ is a matrix with shape `(n, n)` consisting of only 0s and 1s.     
+For `n` number of data points in array `X`, the similarity matrix $\mathbf{A}$ is a matrix with shape `(n, n)` consisting of only 0s and 1s.     
 
 The array `X` has two coordinates for each data point. If the Euclidean or pairwise distance between the data points at index `i` and index `j` in `X` is within a set threshold value called epsilon then for our similarity matrix `A[i,j]` is set to 0, otherwise it is set to 1. All diagonal entries of `A` are set to 0.   
 
@@ -110,56 +142,33 @@ A = 1*(pairwise_distances(X) < epsilon)
 np.fill_diagonal(A, 0) 
 ```
 
-{::options parse_block_html="true" /}
-<div class="gave-help">
-I gave one of my peers a suggestion to create the similarity matrix.
-
-One of my peers created their similarity matrix in the following way. They created a square matrix and then used the pairwise distances matrix and epsilon to update the values in the square matirx. 
-
-```python
-distances = pairwise_distances(X)
-A = np.ones((n,n)) 
-A[distances > epsilon] = 0 
-np.fill_diagonal(A, 0)
-```
-
-I suggested that they could combine the first three lines of code into 1 line using 1*(pairwise_distances(X) < epsilon). Basically this runs the condition "< epsilon" on all the entires of the matrix and outputs true/false. We can convert the true or false to 1 or 0 respectively by multiplying by 1.
-
-```python
-A = 1*(pairwise_distances(X) < epsilon) 
-np.fill_diagonal(A, 0)
-```
-
-</div>
-{::options parse_block_html="false" /}
-
 ## Part B - The norm cut objective
 
 So now we know which points are similar to each other. We still need to partition into the two clusters. We can achieve this by finding the binary norm cut objective of our similarity matrix `A`. But before looking at that, we need to introduce some more expressions.
 
-Let $$C_0$$ and $$C_1$$ be two clusters of the data points, and let's assume that every data point is in either one of the two clusters. We can find which data points belong to which cluster using the array `y` (remember we made two arrays X and y when making the dataset). `y` contains the labels of the data points i.e. if `y[i] = 1`, then the data point `i` is in cluster $$C_1$$ and if `y[i] = 0`, then the data point `i` is in cluster $$C_0$$. 
+Let $C_0$ and $C_1$ be two clusters of the data points, and let's assume that every data point is in either one of the two clusters. We can find which data points belong to which cluster using the array `y` (remember we made two arrays X and y when making the dataset). `y` contains the labels of the data points i.e. if `y[i] = 1`, then the data point `i` is in cluster $C_1$ and if `y[i] = 0`, then the data point `i` is in cluster $C_0$. 
 
-Next, let's look at $$\mathbf{cut}(C_0, C_1)$$ and $$\mathbf{vol}(C_0)$$.
+Next, let's look at $\mathbf{cut}(C_0, C_1)$ and $\mathbf{vol}(C_0)$.
 
-- $$\mathbf{cut}(C_0, C_1) \equiv \sum_{i \in C_0, j \in C_1} a_{ij}$$ is the *cut* of the clusters $$C_0$$ and $$C_1$$. 
-This basically indicates the number of cuts we need to make to correctly partition the points into $$C_0$$ and $$C_1$$ (remember $$C_0$$ and $$C_1$$ were found using `y`). Since our similarity matrix has only 0s and 1s, it basically indicates which points are "similar" / "connected" to each other, so they must be in the same cluster. So the cut term counts the number of times we need to "disconnect" or "cut" such "connected" points in order for them to be partitioned correctly into the clusters we found using `y`.
+- $\mathbf{cut}(C_0, C_1) \equiv \sum_{i \in C_0, j \in C_1} a_{ij}$ is the *cut* of the clusters $C_0$ and $C_1$. 
+This basically indicates the number of cuts we need to make to correctly partition the points into $C_0$ and $C_1$ (remember $C_0$ and $C_1$ were found using `y`). Since our similarity matrix has only 0s and 1s, it basically indicates which points are "similar" / "connected" to each other, so they must be in the same cluster. So the cut term counts the number of times we need to "disconnect" or "cut" such "connected" points in order for them to be partitioned correctly into the clusters we found using `y`.
 
-- $$\mathbf{vol}(C_0) \equiv \sum_{i \in C_0}d_i$$, where $$d_i = \sum_{j = 1}^n a_{ij}$$ is the *degree* of row $$i$$ (the $$i$$th row-sum of $$\mathbf{A}$$). The degree of a row $$i$$ is basically the total number of data points related or similar to data point $$i$$ based on $$A$$. The *volume* of a cluster is a measure of its size. We need this term in order to normalize the cut term.
+- $\mathbf{vol}(C_0) \equiv \sum_{i \in C_0}d_i$, where $d_i = \sum_{j = 1}^n a_{ij}$ is the *degree* of row $i$ (the $i$th row-sum of $\mathbf{A}$). The degree of a row $i$ is basically the total number of data points related or similar to data point $i$ based on $A$. The *volume* of a cluster is a measure of its size. We need this term in order to normalize the cut term.
 
-Finally, we can now introduce the *binary norm cut objective* of a matrix $$\mathbf{A}$$:
+Finally, we can now introduce the *binary norm cut objective* of a matrix $\mathbf{A}$:
 
 $$N_{\mathbf{A}}(C_0, C_1)\equiv \mathbf{cut}(C_0, C_1)\left(\frac{1}{\mathbf{vol}(C_0)} + \frac{1}{\mathbf{vol}(C_1)}\right)\;.$$
 
-If the binary norm cut objective is small then the data has been partitioned well into clusters $$C_0$$ and $$C_1$$. Since the amount of cuts we need to make are few and the sizes of the clusters are big.
+If the binary norm cut objective is small then the data has been partitioned well into clusters $C_0$ and $C_1$. Since the amount of cuts we need to make are few and the sizes of the clusters are big.
 
 Let's look at the Cut Term and the Volume Term one by one.
 
 
 #### B.1 The Cut Term
 
-To reiterate, the cut term $$\mathbf{cut}(C_0, C_1)$$ is the number of "cuts" we need to make between data points that have been found as similar to each other in `A` in order to achieve the same labels based on `y`. So if this is small, then we don't need to make as many cuts, since the labels `y` and the similarity matrix `A` correspond well to each other or paritition the data points the same way. So then there are not many points in any cluster that are "similar" or "connected" to the points in another cluster, so we don't need to cut many connections when the cut term is small.
+To reiterate, the cut term $\mathbf{cut}(C_0, C_1)$ is the number of "cuts" we need to make between data points that have been found as similar to each other in `A` in order to achieve the same labels based on `y`. So if this is small, then we don't need to make as many cuts, since the labels `y` and the similarity matrix `A` correspond well to each other or paritition the data points the same way. So then there are not many points in any cluster that are "similar" or "connected" to the points in another cluster, so we don't need to cut many connections when the cut term is small.
 
-Let's write a function called `cut(A,y)` to compute the cut term. Since $$\mathbf{cut}(C_0, C_1) \equiv \sum_{i \in C_0, j \in C_1} a_{ij}$$, so first we need to find the i and j values in $$C_0$$ and $$C_1$$ respectively. We can use `np.where` to get the indexes `i` for each cluster. Then we add all the entries `A[i,j]` for each pair of points `(i,j)` in $$C_0$$ and $$C_1$$ by looping over the matrix `A`.
+Let's write a function called `cut(A,y)` to compute the cut term. Since $\mathbf{cut}(C_0, C_1) \equiv \sum_{i \in C_0, j \in C_1} a_{ij}$, so first we need to find the i and j values in $C_0$ and $C_1$ respectively. We can use `np.where` to get the indexes `i` for each cluster. Then we add all the entries `A[i,j]` for each pair of points `(i,j)` in $C_0$ and $C_1$ by looping over the matrix `A`.
 
 ## Better way other than looping?? update comment above too!!!
 
@@ -209,19 +218,9 @@ The cut objective is 13 for the true labels and 1150 for the random. These are d
 
 #### B.2 The Volume Term 
 
-As we learnt earlier, *volume term* is a measure of the size of a cluster. So if the size of a cluster is big $$C_0$$, then $$\mathbf{vol}(C_0)$$ will be big and $$\frac{1}{\mathbf{vol}(C_0)}$$ will be small. Thus our norm cut objective will be small as well, which is preferred. Let's write a function `vols(A,y)` that returns the volumes of the two clusters $$C_0$$ and $$C_1$$ as a tuple i.e. (volume of $$C_0$$, volume of $$C_1$$).
+As we learnt earlier, *volume term* is a measure of the size of a cluster. So if the size of a cluster is big $C_0$, then $\mathbf{vol}(C_0)$ will be big and $\frac{1}{\mathbf{vol}(C_0)}$ will be small. Thus our norm cut objective will be small as well, which is preferred. Let's write a function `vols(A,y)` that returns the volumes of the two clusters $C_0$ and $C_1$ as a tuple i.e. (volume of $C_0$, volume of $C_1$).
 
 
-```python
-def vols(A,y):
-    d = A.sum(axis = 1) #returns an array with sum of entries over each row
-    # sum over indexes of each cluster
-    return (sum(d[np.where(y == 0)[0]]), sum(d[np.where(y == 1)[0]]))
-```
-
-{::options parse_block_html="true" /}
-<div class="got-help">
-In my first draft, I created new variables called C0 and C1 to store the indexes of each cluster.
 ```python
 def vols(A,y):
     C0 = np.where(y == 0)[0] #get indexes for cluster 0
@@ -230,21 +229,10 @@ def vols(A,y):
     return (sum(d[C0]), sum(d[C1]))
 ```
 
-One of my peers pointed out that I could make my code more succint by not creating new variables. So in my revised version, I've replaced C0 and C1 with np.where. 
-
-```python
-def vols(A,y):
-    d = A.sum(axis = 1) #returns an array with sum of entries over each row
-    # sum over indexes of each cluster
-    return (sum(d[np.where(y == 0)[0]]), sum(d[np.where(y == 1)[0]]))
-```
-</div>
-{::options parse_block_html="false" /}
-
 So to get a small binary norm cut objective:
 
 1. There should be few instances in `A` for which data points in one cluster are "connected" or "joined" to a data point in another cluster based on the clusters found using `y`.
-2. The sizes or volumes of both $$C_0$$ and $$C_1$$ can't be too small. 
+2. The sizes or volumes of both $C_0$ and $C_1$ can't be too small. 
 
 Finally, let's write a function called `normcut(A,y)` which uses `cut(A,y)` and `vols(A,y)` to compute the binary norm cut objective of a similarity matrix `A` with array of labels `y`.
 
@@ -287,7 +275,7 @@ The normcut objective using the true labels is smaller than using the random lab
 
 So if we can find a `y` for which `normcut(A,y)` is small, then our problem is solved! However, this is not so easy. In fact, it's an NP-hard combinatorial optimization problem, so this approach is not practical. 
 
-We need to define a new vector $$\mathbf{z} \in \mathbb{R}^n$$ such that: 
+We need to define a new vector $\mathbf{z} \in \mathbb{R}^n$ such that: 
 
 $$
 z_i = 
@@ -298,16 +286,16 @@ z_i =
 $$
 
 
-This vector preserves the information we get from $$\mathbf{y}$$, because the sign of $$z_i$$ tells us which cluster it belongs. For example, when $$z_i > 0$$ (i.e. positive) then $$y_i = 0$$, so $$i$$ is in cluster $$C_0$$. 
+This vector preserves the information we get from $\mathbf{y}$, because the sign of $z_i$ tells us which cluster it belongs. For example, when $z_i > 0$ (i.e. positive) then $y_i = 0$, so $i$ is in cluster $C_0$. 
 
-We now define a diagonal matrix $$\mathbf{D}$$ such that $$d_{ii} = d_i$$, and $$d_i = \sum_{j = 1}^n a_i$$ is the degree of i.
+We now define a diagonal matrix $\mathbf{D}$ such that $d_{ii} = d_i$, and $d_i = \sum_{j = 1}^n a_i$ is the degree of i.
 
-Using $$\mathbf{z}$$ and $$\mathbf{D}$$, we can get another formula for the norm cut objective.
+Using $\mathbf{z}$ and $\mathbf{D}$, we can get another formula for the norm cut objective.
 
 $$\mathbf{N}_{\mathbf{A}}(C_0, C_1) = 2\frac{\mathbf{z}^T (\mathbf{D} - \mathbf{A})\mathbf{z}}{\mathbf{z}^T\mathbf{D}\mathbf{z}}\;,$$
 
 We can check if the formula above returns the same value for the norm cut objective as our `normcut(A,y)` function.     
-First, let's write a function `transform(A,y)` to compute the corresponding $$\mathbf{z}$$ vector with `A` and `y` as inputs.
+First, let's write a function `transform(A,y)` to compute the corresponding $\mathbf{z}$ vector with `A` and `y` as inputs.
 
 
 ```python
@@ -318,34 +306,7 @@ def transform(A,y):
     return z
 ```
 
-{::options parse_block_html="true" /}
-<div class="gave-help">
-For this function, I gave one of my peers a suggestion.
-
-One of my peers did the following:
-
-```python
-def transform(A,y):
-     new = y.copy()
-     # assign positive or neg vol according to label
-     new[new == 0] = vols(A,y)[0]
-     new[new == 1] = -vols(A,y)[1]
-     new = 1/new
-     return new
-```
-In order to make their code more succint, I suggested that they could use np.where instead to achieve this task. We can use np.where to easily find the indexes of an array that satisfy a particular condition (if it's in cluster 0), and it creates a new vector which has a particular value (1/v0) at indexes that satisfy that condition and another value (-1/v1) for indexes that don't.
-```python
-def transform(A,y):
-    v0, v1 = vols(A,y)
-    #for indexes of cluster 0, set value at index to 1/v0, otherwise -1/v1 since in cluster 1
-    z = np.where(y == 0, 1/v0, -1/v1)
-    return z
-```
-
-</div>
-{::options parse_block_html="false" /}
-
-Next, let's compute the diagonal matrix $$\mathbf{D}$$. 
+Next, let's compute the diagonal matrix $\mathbf{D}$. 
 
 
 ```python
@@ -368,7 +329,7 @@ np.isclose((z@(D-A)@z)/(z@D@z),normcut(A,y))
 
 
 
-We can also check the identity $$\mathbf{z}^T\mathbf{D}\mathbb{1} = 0$$ using `isclose`.
+We can also check the identity $\mathbf{z}^T\mathbf{D}\mathbb{1} = 0$ using `isclose`.
 
 
 ```python
@@ -384,11 +345,11 @@ np.isclose(z@D@(np.ones(n)), 0)
 
 ## Part D - Optimization
 
-We know that a smaller norm cut means a better clustering. Given the equation of norm cut $$\mathbf{N}_{\mathbf{A}}(C_0, C_1)$$ in Part C, we basically need to minimize the function:
+We know that a smaller norm cut means a better clustering. Given the equation of norm cut $\mathbf{N}_{\mathbf{A}}(C_0, C_1)$ in Part C, we basically need to minimize the function:
 
 $$ R_\mathbf{A}(\mathbf{z})\equiv \frac{\mathbf{z}^T (\mathbf{D} - \mathbf{A})\mathbf{z}}{\mathbf{z}^T\mathbf{D}\mathbf{z}} $$
 
-with $$\mathbf{z}^T\mathbf{D}\mathbb{1} = 0$$. We can inlcude this condition into the optimization by replacing $$\mathbf{z}$$ with the orthogonal complement of $$\mathbf{z}$$ relative to $$\mathbf{D}\mathbb{1}$$. We can write a function `orth_obj` to achieve this. We can subtract the orthogonal of $$\mathbf{z}$$ relative to $$\mathbf{D}\mathbb{1}$$ (which we find using the `orth` function) from $$\mathbf{z}$$ to find the orthogonal complement of $$\mathbf{z}$$. 
+with $\mathbf{z}^T\mathbf{D}\mathbb{1} = 0$. We can inlcude this condition into the optimization by replacing $\mathbf{z}$ with the orthogonal complement of $\mathbf{z}$ relative to $\mathbf{D}\mathbb{1}$. We can write a function `orth_obj` to achieve this. We can subtract the orthogonal of $\mathbf{z}$ relative to $\mathbf{D}\mathbb{1}$ (which we find using the `orth` function) from $\mathbf{z}$ to find the orthogonal complement of $\mathbf{z}$. 
 
 
 ```python
@@ -404,7 +365,7 @@ def orth_obj(z):
     return (z_o @ (D - A) @ z_o)/(z_o @ D @ z_o)
 ```
 
-Remember that we want to minimize our norm cut objective, that is, we need to minimize $$R_\mathbf{A}(\mathbf{z})$$ defined above. So now we can minimize our function `orth_obj` with respect to $$\mathbf{z}$$ by using `minimize` from `scipy.optimize`, returning a minimizing vector `z_min`. 
+Remember that we want to minimize our norm cut objective, that is, we need to minimize $R_\mathbf{A}(\mathbf{z})$ defined above. So now we can minimize our function `orth_obj` with respect to $\mathbf{z}$ by using `minimize` from `scipy.optimize`, returning a minimizing vector `z_min`. 
 
 
 ```python
@@ -416,39 +377,50 @@ z_min = minimize(orth_obj, z).x #explicit optimization
 
 The sign of `z_min[i]` represents which cluster the data point at index `i` belongs to. So for all `i` where `z_min[i] < 0`, `X[i]` belong to the same cluster, and for all `j` where `z_min[j] >= 0`, `X[j]` belong to another cluster.
 
+
 ```python
-plt.scatter(X[:,0], X[:,1], c=z_min >= 0)
+neg = X[np.where(z_min < -0.0015)[0]] #get the first cluster based on indexes from negative values in z_min
+pos = X[np.where(z_min >= -0.0015)[0]] #get the second cluster based on indexes from positive values in z_min
 ```
 
-![blog2_output_42_1.png](/images/blog2_output_42_1.png)
 
-Looks like spectral clustering indeed helped in correctly clustering the data!
-
-{::options parse_block_html="true" /}
-<div class="got-help">
-In my first draft of my code, I broke down the creation of scatter plots step by step.
 ```python
-#get the first cluster based on indexes from negative values in z_min
-neg = X[np.where(z_min < 0)[0]] 
-#get the second cluster based on indexes from positive values in z_min
-pos = X[np.where(z_min >= 0)[0]] 
 plt.scatter(neg[:,0], neg[:,1])
 plt.scatter(pos[:,0], pos[:,1], color = "red")
 ```
 
-![blog2_output_41_1.png](/images/blog2_output_41_1.png)
 
 
 
-One of my peer reviewers pointed out to me that my code to create the plot could be shortened in this part. That's when I realized I could just use the "c" parameter while creating the scatterplots.
+    <matplotlib.collections.PathCollection at 0x126e89dd0>
+
+
+
+
+![png](output_41_1.png)
+
+
+
 ```python
-plt.scatter(X[:,0], X[:,1], c=z_min >= 0)
+plt.scatter(X[:,0], X[:,1], c=z_min >= -0.0015)
 ```
-![blog2_output_42_1.png](/images/blog2_output_42_1.png)
-</div>
-{::options parse_block_html="false" /}
 
 
+
+
+    <matplotlib.collections.PathCollection at 0x126f75290>
+
+
+
+
+![png](output_42_1.png)
+
+
+## UPDATED SCATTERPLOTS
+
+## Comment on got help! Updated the way I created my scatterplot
+
+Looks like spectral clustering indeed helped in correctly clustering the data!
 
 ## Part F - Using eigenvalues and eigenvectors instead
 
@@ -460,9 +432,9 @@ We want to minimize the function
 
 $$ R_\mathbf{A}(\mathbf{z})\equiv \frac{\mathbf{z}^T (\mathbf{D} - \mathbf{A})\mathbf{z}}{\mathbf{z}^T\mathbf{D}\mathbf{z}} $$
 
-with respect to $$\mathbf{z}$$, and the condition $$\mathbf{z}^T\mathbf{D}\mathbb{1} = 0$$. 
+with respect to $\mathbf{z}$, and the condition $\mathbf{z}^T\mathbf{D}\mathbb{1} = 0$. 
 
-We need to use the Rayleigh-Ritz Theorem, which states that the minimizing vector $$\mathbf{z}$$ must be the the eigenvector with smallest eigenvalue of the generalized eigenvalue problem 
+We need to use the Rayleigh-Ritz Theorem, which states that the minimizing vector $\mathbf{z}$ must be the the eigenvector with smallest eigenvalue of the generalized eigenvalue problem 
 
 $$ (\mathbf{D} - \mathbf{A}) \mathbf{z} = \lambda \mathbf{D}\mathbf{z}\;, \quad \mathbf{z}^T\mathbf{D}\mathbb{1} = 0$$
 
@@ -470,9 +442,9 @@ this can be converted to the standard eigenvalue problem
 
 $$ \mathbf{D}^{-1}(\mathbf{D} - \mathbf{A}) \mathbf{z} = \lambda \mathbf{z}\;, \quad \mathbf{z}^T\mathbb{1} = 0\;.$$
 
-This tells us that $$\mathbb{1}$$ is the eigenvector with the smallest eigenvalue of the matrix $$\mathbf{D}^{-1}(\mathbf{D} - \mathbf{A})$$. So, now we can find the minimizing vector $$\mathbf{z}$$, since it's the eigenvector with the *second*-smallest eigenvalue. Let's do it!
+This tells us that $\mathbb{1}$ is the eigenvector with the smallest eigenvalue of the matrix $\mathbf{D}^{-1}(\mathbf{D} - \mathbf{A})$. So, now we can find the minimizing vector $\mathbf{z}$, since it's the eigenvector with the *second*-smallest eigenvalue. Let's do it!
 
-First, we construct the *Laplacian* matrix of the similarity matrix $$\mathbf{A}$$,     
+First, we construct the *Laplacian* matrix of the similarity matrix $\mathbf{A}$,     
 $$\mathbf{L} = \mathbf{D}^{-1}(\mathbf{D} - \mathbf{A})$$
 
 
@@ -481,7 +453,7 @@ D_inv = np.linalg.inv(D)#compute the inverse of D
 L = D_inv@(D-A) #construct the Laplacian matrix
 ```
 
-Next, we find the eigenvector `z_eig` with the second-smallest eigenvalue with respect to matrix $$\mathbf{L}$$.
+Next, we find the eigenvector `z_eig` with the second-smallest eigenvalue with respect to matrix $\mathbf{L}$.
 
 
 ```python
@@ -502,7 +474,14 @@ plt.scatter(X[:,0], X[:,1], c=z_eig >= 0)
 ```
 
 
-![blog2_output_51_1.png](/images/blog2_output_51_1.png)
+
+
+    <matplotlib.collections.PathCollection at 0x127042190>
+
+
+
+
+![png](output_51_1.png)
 
 
 ## Part G - Create a spectral clustering function
@@ -547,7 +526,15 @@ Let's demonstrate this function using supplied data.
 plt.scatter(X[:,0], X[:,1], c=spectral_clustering(X, epsilon = 0.4))
 ```
 
-![blog2_output_55_1.png](/images/blog2_output_55_1.png)
+
+
+
+    <matplotlib.collections.PathCollection at 0x126fdda10>
+
+
+
+
+![png](output_55_1.png)
 
 
 Great! Our function works well!
@@ -570,7 +557,14 @@ plt.scatter(X1[:,0], X1[:,1])
 ```
 
 
-![blog2_output_59_1png](/images/blog2_output_59_1.png)
+
+
+    <matplotlib.collections.PathCollection at 0x1274cb9d0>
+
+
+
+
+![png](output_59_1.png)
 
 
 
@@ -578,7 +572,15 @@ plt.scatter(X1[:,0], X1[:,1])
 plt.scatter(X1[:,0], X1[:,1], c=spectral_clustering(X1, 0.4))
 ```
 
-![blog2_output_60_1.png](/images/blog2_output_60_1.png)
+
+
+
+    <matplotlib.collections.PathCollection at 0x1275e1790>
+
+
+
+
+![png](output_60_1.png)
 
 
 
@@ -590,7 +592,14 @@ plt.scatter(X2[:,0], X2[:,1])
 ```
 
 
-![blog2_output_61_1.png](/images/blog2_output_61_1.png)
+
+
+    <matplotlib.collections.PathCollection at 0x1276e1610>
+
+
+
+
+![png](output_61_1.png)
 
 
 
@@ -598,7 +607,15 @@ plt.scatter(X2[:,0], X2[:,1])
 plt.scatter(X2[:,0], X2[:,1], c=spectral_clustering(X2, 0.4))
 ```
 
-![blog2_output_62_1.png](/images/blog2_output_62_1.png)
+
+
+
+    <matplotlib.collections.PathCollection at 0x1277f9610>
+
+
+
+
+![png](output_62_1.png)
 
 
 
@@ -609,7 +626,15 @@ X3, y3 = datasets.make_moons(n_samples=n, shuffle=True, noise=0.2, random_state=
 plt.scatter(X3[:,0], X3[:,1])
 ```
 
-![blog2_output_63_1.png](/images/blog2_output_63_1.png)
+
+
+
+    <matplotlib.collections.PathCollection at 0x1278f1d50>
+
+
+
+
+![png](output_63_1.png)
 
 
 
@@ -618,7 +643,14 @@ plt.scatter(X3[:,0], X3[:,1], c=spectral_clustering(X3, 0.4))
 ```
 
 
-![blog2_output_64_1.png](/images/blog2_output_64_1.png)
+
+
+    <matplotlib.collections.PathCollection at 0x12757af10>
+
+
+
+
+![png](output_64_1.png)
 
 
 We can see that as the noise increases, the data points become more spread out. Spectral clustering still appears to work as the noise increases although the clusters are less distinct.
@@ -636,7 +668,13 @@ plt.scatter(X[:,0], X[:,1])
 
 
 
-![blog2_output_67_1.png](/images/blog2_output_67_1.png)
+
+    <matplotlib.collections.PathCollection at 0x12ce0f150>
+
+
+
+
+![png](output_67_1.png)
 
 
 First, let's see how k-means does.
@@ -648,7 +686,15 @@ km.fit(X)
 plt.scatter(X[:,0], X[:,1], c = km.predict(X))
 ```
 
-![blog2_output_69_1.png](/images/blog2_output_69_1.png)
+
+
+
+    <matplotlib.collections.PathCollection at 0x1272dbb10>
+
+
+
+
+![png](output_69_1.png)
 
 
 As we can see, k-means does not correctly separate the two circles.
@@ -661,7 +707,15 @@ Let's check if the spectral clustering algorithm can correctly partition the two
 plt.scatter(X[:,0], X[:,1], c=spectral_clustering(X, 0.2))
 ```
 
-![blog2_output_72_1.png](/images/blog2_output_72_1.png)
+
+
+
+    <matplotlib.collections.PathCollection at 0x127346350>
+
+
+
+
+![png](output_72_1.png)
 
 
 Great! The spectral clustering correctly clusters the data points for epsilon = 0.2.
@@ -675,7 +729,12 @@ plt.scatter(X[:,0], X[:,1], c=spectral_clustering(X, 0.5))
 
 
 
-![blog2_output_74_1.png](/images/blog2_output_74_1.png)
+    <matplotlib.collections.PathCollection at 0x1280b6990>
+
+
+
+
+![png](output_74_1.png)
 
 
 The spectral clustering still works correctly for epsilon = 0.5.
@@ -689,7 +748,12 @@ plt.scatter(X[:,0], X[:,1], c=spectral_clustering(X, 0.7))
 
 
 
-![blog2_output_76_1.png](/images/blog2_output_76_1.png)
+    <matplotlib.collections.PathCollection at 0x1283cf290>
+
+
+
+
+![png](output_76_1.png)
 
 
 Looks like it doesn't work properly for epsilon = 0.7, but it was working for epsilon = 0.5. Let's check 0.6!
@@ -702,7 +766,13 @@ plt.scatter(X[:,0], X[:,1], c=spectral_clustering(X, 0.6))
 
 
 
-![blog2_output_78_1.png](/images/blog2_output_78_1.png)
+
+    <matplotlib.collections.PathCollection at 0x128429b90>
+
+
+
+
+![png](output_78_1.png)
 
 
 The spectral clustering doesn't correctly cluster the data points for epsilon = 0.6 either.    
