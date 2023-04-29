@@ -4,10 +4,10 @@ title: About
 permalink: /about/
 ---
 
-Hello! I'm a third-year studying Applied Mathematics with a Specialization in Computing at UCLA.
+Hello! I have an undergrad degree in Applied Mathematics with a Specialization in Computing from UCLA. I graduated in 2022 and have been working as an analyst in healthcare consulting.
 
 
-I am a data science enthusiast! I enjoy using data to solve challenging problems and applying machine learning algorithms to generate actionable insights from large datasets.
+I am a data science enthusiast! I enjoy using data to solve challenging problems and generate actionable insights from large datasets.
 
 ### Contact me
 
